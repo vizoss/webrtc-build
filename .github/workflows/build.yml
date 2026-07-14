@@ -67,7 +67,7 @@ jobs:
           - android
           - android_prefixed
           - android_prefixed_stripped
-    runs-on: namespace-profile-webrtc-android
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
     - run: ./build.${{ matrix.name }}.sh "${{ github.event.inputs.commitHash }}"

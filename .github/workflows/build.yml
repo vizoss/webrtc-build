@@ -42,7 +42,6 @@ jobs:
       matrix:
         name:
           - apple
-          - apple_prefixed
     runs-on: macos-26
     steps:
     - uses: actions/checkout@v5
@@ -65,8 +64,6 @@ jobs:
       matrix:
         name:
           - android
-          - android_prefixed
-          - android_prefixed_stripped
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -88,15 +85,11 @@ jobs:
     - uses: actions/download-artifact@v4
       with:
         path: artifacts
-        name: webrtc.android_prefixed.tar.gz
+        name: webrtc.android.tar.gz
     - uses: actions/download-artifact@v4
       with:
         path: artifacts
-        name: webrtc.android_prefixed_stripped.tar.gz
-    - uses: actions/download-artifact@v4
-      with:
-        path: artifacts
-        name: LiveKitWebRTC.xcframework.zip
+        name: WebRTC.xcframework.zip
     - uses: softprops/action-gh-release@v2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

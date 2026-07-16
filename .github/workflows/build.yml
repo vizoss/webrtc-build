@@ -95,3 +95,55 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         files: artifacts/**
+  publish-maven:
+    name: Publish Android AAR to maven-repo branch
+    if: github.ref_type == 'tag'
+    needs:
+      - build-linux
+    runs-on: ubuntu-latest
+    env:
+      GROUP_ID: io.github.vizoss
+      ARTIFACT_ID: webrtc-android
+      VERSION: ${{ github.ref_name }}
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+        name: webrtc.android.tar.gz
+    - name: Extract AAR
+      run: |
+        mkdir -p extracted
+        tar -xzf artifacts/webrtc.tar.gz -C extracted
+    - name: Publish to maven-repo branch
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        set -euo pipefail
+        REPO_URL="https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }}.git"
+        git clone "$REPO_URL" maven-checkout
+        cd maven-checkout
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        if git ls-remote --exit-code --heads origin maven-repo >/dev/null 2>&1; then
+          git checkout maven-repo
+        else
+          git checkout --orphan maven-repo
+          git rm -rf . >/dev/null 2>&1 || true
+        fi
+        GROUP_PATH=$(echo "$GROUP_ID" | tr '.' '/')
+        DEST_DIR="$GROUP_PATH/$ARTIFACT_ID/$VERSION"
+        mkdir -p "$DEST_DIR"
+        cp ../extracted/webrtc/aar/libwebrtc.aar "$DEST_DIR/$ARTIFACT_ID-$VERSION.aar"
+        cat > "$DEST_DIR/$ARTIFACT_ID-$VERSION.pom" <<POM
+        <?xml version="1.0" encoding="UTF-8"?>
+        <project xmlns="http://maven.apache.org/POM/4.0.0">
+          <modelVersion>4.0.0</modelVersion>
+          <groupId>${GROUP_ID}</groupId>
+          <artifactId>${ARTIFACT_ID}</artifactId>
+          <version>${VERSION}</version>
+          <packaging>aar</packaging>
+        </project>
+        POM
+        git add "$DEST_DIR"
+        git commit -m "Publish ${ARTIFACT_ID}:${VERSION}"
+        git push origin maven-repo

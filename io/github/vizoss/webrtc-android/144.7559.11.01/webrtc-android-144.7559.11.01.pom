@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>io.github.vizoss</groupId>
+  <artifactId>webrtc-android</artifactId>
+  <version>144.7559.11.01</version>
+  <packaging>aar</packaging>
+</project>

@@ -133,7 +133,15 @@ jobs:
         GROUP_PATH=$(echo "$GROUP_ID" | tr '.' '/')
         DEST_DIR="$GROUP_PATH/$ARTIFACT_ID/$VERSION"
         mkdir -p "$DEST_DIR"
+        DEST_DIR_ABS="$(pwd)/$DEST_DIR"
         cp ../extracted/webrtc/aar/libwebrtc.aar "$DEST_DIR/$ARTIFACT_ID-$VERSION.aar"
+        # Placeholder sources jar: this AAR has no publishable Java/Kotlin
+        # source, but Android Studio's IDE-side "download sources" task
+        # fails (a harmless, non-blocking error) if this classifier is
+        # entirely absent, so publish an empty one to satisfy it.
+        mkdir -p /tmp/empty_sources
+        echo "No sources published for this artifact." > /tmp/empty_sources/README.txt
+        (cd /tmp/empty_sources && zip -r -q "$DEST_DIR_ABS/$ARTIFACT_ID-$VERSION-sources.jar" .)
         cat > "$DEST_DIR/$ARTIFACT_ID-$VERSION.pom" <<POM
         <?xml version="1.0" encoding="UTF-8"?>
         <project xmlns="http://maven.apache.org/POM/4.0.0">
